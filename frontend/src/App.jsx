@@ -1,35 +1,53 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState, useEffect } from 'react';
+import './index.css';
+import Sidebar from './components/Sidebar';
+import Dashboard from './components/Dashboard';
+import Inventory from './components/Inventory';
+import Analytics from './components/Analytics';
+import Predictions from './components/Predictions';
+import Orders from './components/Orders';
+import WhatsAppChat from './components/WhatsAppChat';
+import { getLowStock } from './services/api';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [activePage, setActivePage] = useState('dashboard');
+  const [lowStockCount, setLowStockCount] = useState(0);
+
+  useEffect(() => {
+    getLowStock().then(res => setLowStockCount(res.data.length)).catch(() => { });
+  }, [activePage]);
+
+  const renderPage = () => {
+    switch (activePage) {
+      case 'dashboard':
+        return <Dashboard />;
+      case 'inventory':
+        return <Inventory />;
+      case 'analytics':
+        return <Analytics />;
+      case 'predictions':
+        return <Predictions />;
+      case 'orders':
+        return <Orders />;
+      case 'whatsapp':
+        return <WhatsAppChat />;
+      default:
+        return <Dashboard />;
+    }
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="app-layout">
+      <Sidebar
+        activePage={activePage}
+        onNavigate={setActivePage}
+        lowStockCount={lowStockCount}
+      />
+      <main className="main-content">
+        {renderPage()}
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;
