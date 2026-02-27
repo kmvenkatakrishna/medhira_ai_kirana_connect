@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KiranaConnect | Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+    <nav class="sidebar">
+        <div class="logo">
+            <span class="logo-icon">🏪</span>
+            <h2>KiranaConnect</h2>
+        </div>
+        <ul class="nav-links">
+            <li class="active"><a href="index.html">📊 Dashboard</a></li>
+            <li><a href="inventory.html">📦 Inventory</a></li>
+            <li><a href="chat.html">💬 Mock WhatsApp</a></li>
+            <li><a href="#">📈 Analytics</a></li>
+            <li><a href="#">⚙️ Settings</a></li>
+        </ul>
+    </nav>
+    <main class="content">
+        <header>
+            <h1>Dashboard Overview</h1>
+            <div class="user-profile">
+                <span class="store-id">Store: <strong id="lbl-store-id">DefaultStore</strong></span>
+            </div>
+        </header>
+
+        <section class="metrics-grid">
+            <div class="metric-card">
+                <h3>Total Products</h3>
+                <p class="metric-value" id="val-total-products">0</p>
+            </div>
+            <div class="metric-card warning">
+                <h3>Low Stock Items</h3>
+                <p class="metric-value" id="val-low-stock">0</p>
+            </div>
+            <div class="metric-card danger">
+                <h3>Out of Stock</h3>
+                <p class="metric-value" id="val-out-of-stock">0</p>
+            </div>
+            <div class="metric-card highlight">
+                <h3>Total Inventory Value</h3>
+                <p class="metric-value" id="val-total-value">₹0</p>
+            </div>
+        </section>
+
+        <section class="charts-section">
+            <div class="widget">
+                <div class="widget-header">
+                    <h2>AI Predictions & Suggestions</h2>
+                </div>
+                <div class="widget-body">
+                    <table class="data-table" id="predictions-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Current Stock</th>
+                                <th>Est. Stockout</th>
+                                <th>Suggested Order</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Loaded dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="widget">
+                <div class="widget-header">
+                    <h2>Low Stock Alerts</h2>
+                </div>
+                <div class="widget-body">
+                    <ul class="alert-list" id="low-stock-list">
+                        <!-- Loaded dynamically via JS -->
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script src="app.js"></script>
+</body>
+</html>

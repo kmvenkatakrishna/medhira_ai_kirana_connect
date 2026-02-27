@@ -1,0 +1,109 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  KiranaConnect AWS SAM Template for Serverless backend.
+  Includes API Gateway, AWS Lambda (FastAPI), DynamoDB, and S3.
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 256
+
+Resources:
+  # --------------------------------------------------------------------------
+  # 1. DynamoDB Tables
+  # --------------------------------------------------------------------------
+  InventoryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: KiranaInventory
+      AttributeDefinitions:
+        - AttributeName: store_id
+          AttributeType: S
+        - AttributeName: product_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: store_id
+          KeyType: HASH
+        - AttributeName: product_id
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+
+  MessagesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: KiranaMessages
+      AttributeDefinitions:
+        - AttributeName: store_id
+          AttributeType: S
+        - AttributeName: message_id
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: S
+      KeySchema:
+        - AttributeName: store_id
+          KeyType: HASH
+        - AttributeName: message_id
+          KeyType: RANGE
+      LocalSecondaryIndexes:
+        - IndexName: TimestampIndex
+          KeySchema:
+            - AttributeName: store_id
+              KeyType: HASH
+            - AttributeName: timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+
+  # --------------------------------------------------------------------------
+  # 2. S3 Bucket for Media (Receipt Uploads)
+  # --------------------------------------------------------------------------
+  KiranaMediaBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub kirana-connect-media-${AWS::AccountId}-${AWS::Region}
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ["*"]
+            AllowedMethods: ["GET", "PUT", "POST"]
+            AllowedOrigins: ["*"]
+            MaxAge: 3600
+
+  # --------------------------------------------------------------------------
+  # 3. AWS Lambda Function (FastAPI API)
+  # --------------------------------------------------------------------------
+  KiranaBackendFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: main.handler
+      Runtime: python3.11
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          INVENTORY_TABLE: !Ref InventoryTable
+          MESSAGES_TABLE: !Ref MessagesTable
+          MEDIA_BUCKET: !Ref KiranaMediaBucket
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref InventoryTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MessagesTable
+        - S3CrudPolicy:
+            BucketName: !Ref KiranaMediaBucket
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+
+Outputs:
+  KiranaApiUrl:
+    Description: "API Gateway endpoint URL for Prod environment"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  KiranaMediaBucketName:
+    Description: "S3 Bucket Name for Media"
+    Value: !Ref KiranaMediaBucket
