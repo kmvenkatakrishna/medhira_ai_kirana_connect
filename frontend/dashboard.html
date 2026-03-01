@@ -82,6 +82,46 @@
                 </div>
             </div>
 
+            <!-- AI Insights Panel -->
+            <div class="glass-card animate-fade-up delay-3"
+                style="margin-bottom:24px;border:1px solid rgba(99,102,241,0.3);">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                    <h3 style="font-size:1.1rem;">🧠 AI Insights & Recommendations</h3>
+                    <span class="badge badge-success" id="aiModelBadge">AI Engine v2.0</span>
+                </div>
+                <div class="stats-grid" id="aiStatsGrid" style="margin-bottom:16px;">
+                    <div class="stat-card"
+                        style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);">
+                        <div class="stat-value" id="aiOptScore" style="color:#6366f1;font-size:1.6rem;">—</div>
+                        <div class="stat-label">Optimization Score</div>
+                    </div>
+                    <div class="stat-card"
+                        style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);">
+                        <div class="stat-value" id="aiAccuracy" style="color:#10b981;font-size:1.6rem;">—</div>
+                        <div class="stat-label">Prediction Accuracy</div>
+                    </div>
+                    <div class="stat-card"
+                        style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);">
+                        <div class="stat-value" id="aiRecommendations" style="color:#f59e0b;font-size:1.6rem;">—</div>
+                        <div class="stat-label">AI Recommendations</div>
+                    </div>
+                    <div class="stat-card"
+                        style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);">
+                        <div class="stat-value" id="aiAnomalies" style="color:#ef4444;font-size:1.6rem;">—</div>
+                        <div class="stat-label">Anomalies Detected</div>
+                    </div>
+                </div>
+                <div id="aiSummaryList" style="margin-bottom:16px;"></div>
+                <div id="aiRecommendationCards"
+                    style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;"></div>
+                <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+                    <a href="chat.html" class="btn btn-primary" style="font-size:0.85rem;padding:8px 16px;">🤖 Ask AI
+                        Chat</a>
+                    <button class="btn btn-secondary" style="font-size:0.85rem;padding:8px 16px;"
+                        onclick="loadAIInsights()">🔄 Refresh Insights</button>
+                </div>
+            </div>
+
             <!-- Inventory Table + Low Stock -->
             <div class="two-col">
                 <div class="glass-card animate-fade-up delay-3">
@@ -170,6 +210,71 @@
             const low = await KiranaAPI.getLowStock(storeId);
             if (low && low.low_stock_items) {
                 renderLowStock(low.low_stock_items);
+            }
+
+            // Load AI Insights
+            loadAIInsights();
+        }
+
+        async function loadAIInsights() {
+            const storeId = document.getElementById('storeSelect').value;
+            try {
+                const insights = await KiranaAPI.getAIInsights(storeId);
+                if (!insights) return;
+
+                // Populate AI stats
+                document.getElementById('aiOptScore').textContent =
+                    insights.optimization_score ? `${insights.optimization_score.score}/100` : '—';
+                document.getElementById('aiAccuracy').textContent =
+                    insights.prediction_accuracy ? `${insights.prediction_accuracy.overall_accuracy}%` : '—';
+                document.getElementById('aiRecommendations').textContent =
+                    insights.total_recommendations || 0;
+                document.getElementById('aiAnomalies').textContent =
+                    insights.anomalies ? insights.anomalies.length : 0;
+
+                // AI Summary
+                const summaryEl = document.getElementById('aiSummaryList');
+                if (insights.ai_summary && insights.ai_summary.length > 0) {
+                    summaryEl.innerHTML = insights.ai_summary.map(s =>
+                        `<div style="padding:8px 12px;margin-bottom:6px;border-radius:8px;background:rgba(99,102,241,0.06);border-left:3px solid #6366f1;font-size:0.9rem;color:var(--text-secondary);">${s}</div>`
+                    ).join('');
+                }
+
+                // Recommendation cards
+                const recsEl = document.getElementById('aiRecommendationCards');
+                const allRecs = [];
+                if (insights.profit_insights && insights.profit_insights.recommendations) {
+                    allRecs.push(...insights.profit_insights.recommendations);
+                }
+                if (insights.smart_reorder && insights.smart_reorder.length > 0) {
+                    allRecs.push({
+                        icon: '📋', priority: 'high',
+                        title: `${insights.smart_reorder.length} Items Need Reordering`,
+                        description: `Total estimated cost: ₹${insights.smart_reorder.reduce((s, r) => s + r.estimated_cost, 0).toLocaleString()}`,
+                        action: 'Go to Orders page to place smart order'
+                    });
+                }
+                if (insights.expiry_risks && insights.expiry_risks.length > 0) {
+                    const totalWaste = insights.expiry_risks.reduce((s, r) => s + r.waste_value, 0);
+                    allRecs.push({
+                        icon: '⏰', priority: 'medium',
+                        title: `${insights.expiry_risks.length} Items at Expiry Risk`,
+                        description: `Potential waste: ₹${totalWaste.toLocaleString()}. Consider discounts.`,
+                        action: 'Review perishable items for promotional pricing'
+                    });
+                }
+
+                recsEl.innerHTML = allRecs.map(rec => {
+                    const borderColor = rec.priority === 'high' ? '#ef4444' : rec.priority === 'medium' ? '#f59e0b' : '#10b981';
+                    return `<div style="padding:14px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid ${borderColor}30;">
+                        <div style="font-size:1.1rem;margin-bottom:6px;">${rec.icon} <strong>${rec.title}</strong></div>
+                        <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:8px;">${rec.description}</div>
+                        <div style="font-size:0.8rem;color:${borderColor};font-style:italic;">📌 ${rec.action}</div>
+                    </div>`;
+                }).join('');
+
+            } catch (err) {
+                console.error('AI Insights error:', err);
             }
         }
 

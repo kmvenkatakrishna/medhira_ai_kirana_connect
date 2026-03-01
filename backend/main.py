@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 import os
 
 from .config import APP_NAME, APP_VERSION, DEBUG
-from .routers import inventory, predictions, orders, analytics, chat, products
+from .routers import inventory, predictions, orders, analytics, chat, products, ai
 
 # ── Create FastAPI App ──
 app = FastAPI(
@@ -38,6 +38,7 @@ app.include_router(orders.router)
 app.include_router(analytics.router)
 app.include_router(chat.router)
 app.include_router(products.router)
+app.include_router(ai.router)
 
 # ── Mount Frontend Static Files ──
 frontend_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend")

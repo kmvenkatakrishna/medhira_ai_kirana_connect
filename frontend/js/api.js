@@ -10,6 +10,7 @@ const API_BASE = window.location.hostname === 'localhost' || window.location.hos
 const DEFAULT_STORE = 'S001';
 
 class KiranaAPI {
+    static BASE_URL = API_BASE;
     static async fetch(endpoint, options = {}) {
         try {
             const res = await fetch(`${API_BASE}${endpoint}`, {
@@ -99,6 +100,26 @@ class KiranaAPI {
 
     // ── Distributors ──
     static getDistributors() { return this.fetch('/api/v1/distributors'); }
+
+    // ── AI Intelligence ──
+    static getAIInsights(storeId = DEFAULT_STORE) {
+        return this.fetch(`/api/v1/stores/${storeId}/ai/insights`);
+    }
+    static getAIForecast(storeId = DEFAULT_STORE, topN = 15) {
+        return this.fetch(`/api/v1/stores/${storeId}/ai/forecast?top_n=${topN}`);
+    }
+    static getAIAccuracy(storeId = DEFAULT_STORE) {
+        return this.fetch(`/api/v1/stores/${storeId}/ai/accuracy`);
+    }
+    static getSmartReorder(storeId = DEFAULT_STORE) {
+        return this.fetch(`/api/v1/stores/${storeId}/ai/smart-reorder`);
+    }
+    static getExpiryRisk(storeId = DEFAULT_STORE) {
+        return this.fetch(`/api/v1/stores/${storeId}/ai/expiry-risk`);
+    }
+    static getCrossSell(storeId = DEFAULT_STORE) {
+        return this.fetch(`/api/v1/stores/${storeId}/ai/cross-sell`);
+    }
 }
 
 // Utility: Format currency
