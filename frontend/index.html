@@ -1,87 +1,288 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KiranaConnect | Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <title>KiranaConnect AI — Smart Inventory for Kirana Stores</title>
+    <meta name="description"
+        content="AI-powered inventory management for millions of Kirana stores in India. WhatsApp-based, simple, intelligent.">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .aws-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: rgba(255, 153, 0, 0.1);
+            border: 1px solid rgba(255, 153, 0, 0.3);
+            border-radius: var(--radius-full);
+            font-size: 0.7rem;
+            color: #FF9900;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .stats-hero {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 60px;
+        }
+
+        .stats-hero .stat-mini {
+            text-align: center;
+            padding: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-lg);
+        }
+
+        .stat-mini .number {
+            font-size: 2rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-mini .label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 48px;
+        }
+
+        .tech-tag {
+            padding: 8px 16px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-full);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: var(--transition-fast);
+        }
+
+        .tech-tag:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary-light);
+        }
+
+        .cta-section {
+            text-align: center;
+            padding: 80px 0;
+        }
+
+        .cta-section h2 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .cta-section p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            margin-bottom: 32px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-hero {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
 </head>
-<body class="dark-theme">
-    <nav class="sidebar">
-        <div class="logo">
-            <span class="logo-icon">🏪</span>
-            <h2>KiranaConnect</h2>
+
+<body>
+    <!-- Navigation -->
+    <nav class="nav" id="mainNav">
+        <div class="nav-inner">
+            <a href="index.html" class="nav-logo">
+                <span class="nav-logo-icon">🏪</span>
+                <span>Kirana<span class="text-gradient">Connect</span></span>
+                <span class="aws-badge">☁️ AWS Powered</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html" class="active">🏠 Home</a></li>
+                <li><a href="dashboard.html">📊 Dashboard</a></li>
+                <li><a href="chat.html">💬 AI Chat</a></li>
+                <li><a href="analytics.html">📈 Analytics</a></li>
+                <li><a href="orders.html">📋 Orders</a></li>
+            </ul>
         </div>
-        <ul class="nav-links">
-            <li class="active"><a href="index.html">📊 Dashboard</a></li>
-            <li><a href="inventory.html">📦 Inventory</a></li>
-            <li><a href="chat.html">💬 Mock WhatsApp</a></li>
-            <li><a href="#">📈 Analytics</a></li>
-            <li><a href="#">⚙️ Settings</a></li>
-        </ul>
     </nav>
-    <main class="content">
-        <header>
-            <h1>Dashboard Overview</h1>
-            <div class="user-profile">
-                <span class="store-id">Store: <strong id="lbl-store-id">DefaultStore</strong></span>
-            </div>
-        </header>
 
-        <section class="metrics-grid">
-            <div class="metric-card">
-                <h3>Total Products</h3>
-                <p class="metric-value" id="val-total-products">0</p>
-            </div>
-            <div class="metric-card warning">
-                <h3>Low Stock Items</h3>
-                <p class="metric-value" id="val-low-stock">0</p>
-            </div>
-            <div class="metric-card danger">
-                <h3>Out of Stock</h3>
-                <p class="metric-value" id="val-out-of-stock">0</p>
-            </div>
-            <div class="metric-card highlight">
-                <h3>Total Inventory Value</h3>
-                <p class="metric-value" id="val-total-value">₹0</p>
+    <main class="page-wrapper">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content animate-fade-up">
+                    <span class="hero-badge">🤖 AI-Powered Inventory Agent</span>
+                    <h1>Smart Inventory<br>for <span class="text-gradient">12M+ Kirana</span><br>Stores</h1>
+                    <p>Stop losing ₹50,000+/year to bad inventory decisions. KiranaConnect uses AI to predict demand,
+                        prevent stockouts, and auto-order from distributors — all through WhatsApp.</p>
+                    <div class="hero-actions">
+                        <a href="chat.html" class="btn btn-primary">💬 Try AI Chat Demo</a>
+                        <a href="dashboard.html" class="btn btn-secondary">📊 View Dashboard</a>
+                    </div>
+                </div>
+
+                <!-- Floating Visual Cards -->
+                <div class="hero-visual">
+                    <div class="hero-card animate-fade delay-2" style="position:absolute;top:0;right:0;width:280px;">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                            <span style="font-size:1.5rem;">📈</span>
+                            <span style="font-weight:600;">Demand Forecast</span>
+                        </div>
+                        <div style="font-size:0.85rem;color:var(--text-secondary);">Milk packets demand tomorrow</div>
+                        <div style="font-size:1.8rem;font-weight:800;color:#10b981;margin:8px 0;">+23%</div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);">Festival season boost detected</div>
+                    </div>
+                    <div class="hero-card animate-fade delay-3"
+                        style="position:absolute;top:160px;right:120px;width:260px;">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                            <span style="font-size:1.5rem;">⚠️</span>
+                            <span style="font-weight:600;color:#f59e0b;">Low Stock Alert</span>
+                        </div>
+                        <div style="font-size:0.85rem;">Toor Dal — <strong>8 packets</strong> left</div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">Reorder point: 15 packets
+                        </div>
+                        <button class="btn btn-sm btn-success" style="margin-top:10px;">Auto-Order →</button>
+                    </div>
+                    <div class="hero-card animate-fade delay-4"
+                        style="position:absolute;top:320px;right:40px;width:240px;">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                            <span style="font-size:1.5rem;">💰</span>
+                            <span style="font-weight:600;">Today's Sales</span>
+                        </div>
+                        <div style="font-size:1.6rem;font-weight:800;">₹12,450</div>
+                        <div class="stat-change up" style="margin-top:6px;">↑ 12% vs yesterday</div>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <section class="charts-section">
-            <div class="widget">
-                <div class="widget-header">
-                    <h2>AI Predictions & Suggestions</h2>
+        <!-- Stats Bar -->
+        <section class="container">
+            <div class="stats-hero animate-fade-up delay-3">
+                <div class="stat-mini">
+                    <div class="number">12M+</div>
+                    <div class="label">Target Kirana Stores</div>
                 </div>
-                <div class="widget-body">
-                    <table class="data-table" id="predictions-table">
-                        <thead>
-                            <tr>
-                                <th>Product</th>
-                                <th>Current Stock</th>
-                                <th>Est. Stockout</th>
-                                <th>Suggested Order</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Loaded dynamically via JS -->
-                        </tbody>
-                    </table>
+                <div class="stat-mini">
+                    <div class="number">80%</div>
+                    <div class="label">Forecast Accuracy</div>
                 </div>
-            </div>
-            <div class="widget">
-                <div class="widget-header">
-                    <h2>Low Stock Alerts</h2>
+                <div class="stat-mini">
+                    <div class="number">₹50K</div>
+                    <div class="label">Annual Savings/Store</div>
                 </div>
-                <div class="widget-body">
-                    <ul class="alert-list" id="low-stock-list">
-                        <!-- Loaded dynamically via JS -->
-                    </ul>
+                <div class="stat-mini">
+                    <div class="number">3 min</div>
+                    <div class="label">Daily Time Required</div>
                 </div>
             </div>
         </section>
+
+        <!-- Features Section -->
+        <section class="section">
+            <div class="container">
+                <div class="section-header text-center animate-fade-up">
+                    <h2>Everything a Kirana Owner Needs, <span class="text-gradient">Powered by AI</span></h2>
+                    <p>From WhatsApp messages to intelligent inventory management — no app needed</p>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-card animate-fade-up delay-1">
+                        <div class="feature-icon" style="background:rgba(99,102,241,0.1);">💬</div>
+                        <h3>WhatsApp Interface</h3>
+                        <p>Send photos of bills, voice notes, or text messages. KiranaConnect understands Hindi,
+                            English, and Hinglish — naturally.</p>
+                    </div>
+                    <div class="feature-card animate-fade-up delay-2">
+                        <div class="feature-icon" style="background:rgba(16,185,129,0.1);">🔮</div>
+                        <h3>AI Demand Prediction</h3>
+                        <p>ML models analyze 90 days of history, weather, festivals, and trends to predict exactly what
+                            you need to stock next week.</p>
+                    </div>
+                    <div class="feature-card animate-fade-up delay-3">
+                        <div class="feature-icon" style="background:rgba(245,158,11,0.1);">⚡</div>
+                        <h3>Smart Auto-Ordering</h3>
+                        <p>Get low-stock alerts 2-3 days before stockout. Auto-generate optimized orders and send
+                            directly to your distributor.</p>
+                    </div>
+                    <div class="feature-card animate-fade-up delay-4">
+                        <div class="feature-icon" style="background:rgba(239,68,68,0.1);">📸</div>
+                        <h3>OCR Bill Scanning</h3>
+                        <p>Snap a photo of any purchase receipt. Our OCR engine extracts products, quantities, and
+                            prices automatically.</p>
+                    </div>
+                    <div class="feature-card animate-fade-up delay-5">
+                        <div class="feature-icon" style="background:rgba(59,130,246,0.1);">📊</div>
+                        <h3>Real-Time Analytics</h3>
+                        <p>Daily sales reports, category breakdown, profit margins, and inventory turnover — all on your
+                            WhatsApp or dashboard.</p>
+                    </div>
+                    <div class="feature-card animate-fade-up">
+                        <div class="feature-icon" style="background:rgba(168,85,247,0.1);">🌦️</div>
+                        <h3>External Intelligence</h3>
+                        <p>Integrates weather forecasts, festival calendars, and economic cycles to anticipate demand
+                            surges before they happen.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AWS Architecture Section -->
+        <section class="section" style="background: var(--bg-secondary);">
+            <div class="container">
+                <div class="section-header text-center animate-fade-up">
+                    <h2>Built on <span style="color:#FF9900;">AWS</span> Infrastructure</h2>
+                    <p>Enterprise-grade cloud architecture for reliability and scale</p>
+                </div>
+                <div class="tech-stack animate-fade-up">
+                    <span class="tech-tag">🔸 Amazon EC2</span>
+                    <span class="tech-tag">🔸 Amazon API Gateway</span>
+                    <span class="tech-tag">🔸 Amazon DynamoDB</span>
+                    <span class="tech-tag">🔸 Amazon S3</span>
+                    <span class="tech-tag">🔸 AWS Lambda</span>
+                    <span class="tech-tag">🟣 FastAPI</span>
+                    <span class="tech-tag">🟣 Python 3.11</span>
+                    <span class="tech-tag">🔵 Chart.js</span>
+                    <span class="tech-tag">🟢 WhatsApp API</span>
+                    <span class="tech-tag">🤖 ML Forecasting</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <div class="container">
+                <h2 class="animate-fade-up">Ready to <span class="text-gradient">Transform</span> Your Store?</h2>
+                <p class="animate-fade-up">Start managing inventory smarter today. No installation required.</p>
+                <div class="hero-actions" style="justify-content:center;">
+                    <a href="chat.html" class="btn btn-primary animate-fade-up delay-2">💬 Try the AI Assistant</a>
+                    <a href="dashboard.html" class="btn btn-secondary animate-fade-up delay-3">📊 Explore Dashboard</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <p>© 2026 KiranaConnect AI — Medhira AI | Built with ❤️ for India's Kirana stores</p>
+                <p style="margin-top:8px;font-size:0.75rem;">Powered by AWS • FastAPI • Python • Chart.js</p>
+            </div>
+        </footer>
     </main>
-    <script src="app.js"></script>
 </body>
+
 </html>

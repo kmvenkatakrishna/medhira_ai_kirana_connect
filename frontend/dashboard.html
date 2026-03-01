@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — KiranaConnect AI</title>
+    <meta name="description" content="Real-time inventory dashboard for your Kirana store">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <nav class="nav">
+        <div class="nav-inner">
+            <a href="index.html" class="nav-logo"><span class="nav-logo-icon">🏪</span><span>Kirana<span
+                        class="text-gradient">Connect</span></span></a>
+            <ul class="nav-links">
+                <li><a href="index.html">🏠 Home</a></li>
+                <li><a href="dashboard.html" class="active">📊 Dashboard</a></li>
+                <li><a href="chat.html">💬 AI Chat</a></li>
+                <li><a href="analytics.html">📈 Analytics</a></li>
+                <li><a href="orders.html">📋 Orders</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="page-wrapper">
+        <div class="container">
+            <!-- Header -->
+            <div class="section-header animate-fade-up"
+                style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <h2>📊 Inventory Dashboard</h2>
+                    <p id="storeInfo">Loading store data...</p>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <select class="form-input" id="storeSelect" style="width:auto;" onchange="loadDashboard()">
+                        <option value="S001">Rajesh General Store</option>
+                        <option value="S002">Priya Kirana & Provisions</option>
+                        <option value="S003">Farooq Provision Store</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card animate-fade-up delay-1">
+                    <div class="stat-icon" style="background:rgba(99,102,241,0.1);">📦</div>
+                    <div class="stat-value" id="totalProducts">—</div>
+                    <div class="stat-label">Total Products</div>
+                </div>
+                <div class="stat-card animate-fade-up delay-2">
+                    <div class="stat-icon" style="background:rgba(16,185,129,0.1);">💰</div>
+                    <div class="stat-value" id="inventoryValue">—</div>
+                    <div class="stat-label">Inventory Value</div>
+                    <div class="stat-change up">Total Stock Worth</div>
+                </div>
+                <div class="stat-card animate-fade-up delay-3">
+                    <div class="stat-icon" style="background:rgba(245,158,11,0.1);">⚠️</div>
+                    <div class="stat-value" id="lowStockCount">—</div>
+                    <div class="stat-label">Low Stock Alerts</div>
+                    <div class="stat-change down" id="lowStockBadge">Need reorder</div>
+                </div>
+                <div class="stat-card animate-fade-up delay-4">
+                    <div class="stat-icon" style="background:rgba(59,130,246,0.1);">📈</div>
+                    <div class="stat-value" id="dailySales">—</div>
+                    <div class="stat-label">Avg Daily Sales</div>
+                    <div class="stat-change up">Last 30 days</div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="two-col" style="margin-bottom:24px;">
+                <div class="glass-card animate-fade-up delay-2">
+                    <h3 style="margin-bottom:16px;font-size:1.05rem;">📈 Sales Trend (30 Days)</h3>
+                    <div class="chart-container"><canvas id="salesChart"></canvas></div>
+                </div>
+                <div class="glass-card animate-fade-up delay-3">
+                    <h3 style="margin-bottom:16px;font-size:1.05rem;">🥧 Category Breakdown</h3>
+                    <div class="chart-container"><canvas id="categoryChart"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Inventory Table + Low Stock -->
+            <div class="two-col">
+                <div class="glass-card animate-fade-up delay-3">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                        <h3 style="font-size:1.05rem;">📦 Inventory Items</h3>
+                        <select class="form-input" id="categoryFilter" style="width:auto;font-size:0.8rem;"
+                            onchange="filterInventory()">
+                            <option value="">All Categories</option>
+                        </select>
+                    </div>
+                    <div style="max-height:400px;overflow-y:auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Stock</th>
+                                    <th>Status</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="glass-card animate-fade-up delay-4">
+                    <h3 style="font-size:1.05rem;margin-bottom:16px;">⚠️ Low Stock Alerts</h3>
+                    <div id="lowStockList" style="max-height:400px;overflow-y:auto;"></div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <p>© 2026 KiranaConnect AI — Medhira AI</p>
+            </div>
+        </footer>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script>
+        let salesChart, categoryChart;
+        let allInventory = [];
+
+        async function loadDashboard() {
+            const storeId = document.getElementById('storeSelect').value;
+
+            // Load analytics summary
+            const summary = await KiranaAPI.getAnalyticsSummary(storeId);
+            if (summary) {
+                document.getElementById('totalProducts').textContent = summary.total_products || 0;
+                document.getElementById('inventoryValue').textContent = formatCurrency(summary.inventory_value);
+                document.getElementById('lowStockCount').textContent = summary.low_stock_count || 0;
+                document.getElementById('dailySales').textContent = formatCurrency(summary.avg_daily_sales);
+                document.getElementById('storeInfo').textContent = `Store ${storeId} • Last updated: ${new Date().toLocaleString()}`;
+
+                // Sales trend chart
+                if (summary.sales_trend && summary.sales_trend.length > 0) {
+                    const labels = summary.sales_trend.map(d => d.date.slice(5));
+                    const data = summary.sales_trend.map(d => d.sales);
+                    renderSalesChart(labels, data);
+                }
+
+                // Category chart
+                if (summary.top_categories && summary.top_categories.length > 0) {
+                    const catLabels = summary.top_categories.map(c => c.category);
+                    const catData = summary.top_categories.map(c => c.sales);
+                    renderCategoryChart(catLabels, catData);
+                }
+            }
+
+            // Load inventory
+            const inv = await KiranaAPI.getInventory(storeId);
+            if (inv && inv.items) {
+                allInventory = inv.items;
+                renderInventoryTable(inv.items);
+
+                // Populate category filter
+                const cats = [...new Set(inv.items.map(i => i.category))].sort();
+                const filter = document.getElementById('categoryFilter');
+                filter.innerHTML = '<option value="">All Categories</option>' +
+                    cats.map(c => `<option value="${c}">${c}</option>`).join('');
+            }
+
+            // Load low stock
+            const low = await KiranaAPI.getLowStock(storeId);
+            if (low && low.low_stock_items) {
+                renderLowStock(low.low_stock_items);
+            }
+        }
+
+        function filterInventory() {
+            const cat = document.getElementById('categoryFilter').value;
+            const filtered = cat ? allInventory.filter(i => i.category === cat) : allInventory;
+            renderInventoryTable(filtered);
+        }
+
+        function renderInventoryTable(items) {
+            const tbody = document.getElementById('inventoryTable');
+            tbody.innerHTML = items.map(item => {
+                const pct = (item.current_quantity / item.optimal_quantity) * 100;
+                const status = item.current_quantity <= item.reorder_point
+                    ? '<span class="badge badge-danger">Low</span>'
+                    : pct > 120
+                        ? '<span class="badge badge-warning">Overstock</span>'
+                        : '<span class="badge badge-success">OK</span>';
+                return `<tr>
+                    <td>
+                        <div style="font-weight:500;">${item.product_name}</div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);">${item.category}</div>
+                    </td>
+                    <td>
+                        <div>${item.current_quantity} ${item.unit}s</div>
+                        <div class="progress-bar" style="width:80px;margin-top:4px;">
+                            <div class="progress-fill" style="width:${Math.min(pct, 100)}%;background:${pct < 30 ? '#ef4444' : pct < 60 ? '#f59e0b' : '#10b981'};"></div>
+                        </div>
+                    </td>
+                    <td>${status}</td>
+                    <td style="color:var(--text-secondary);">${formatCurrency(item.current_quantity * item.unit_price)}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function renderLowStock(items) {
+            const list = document.getElementById('lowStockList');
+            if (items.length === 0) {
+                list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">✅ All items well-stocked!</div>';
+                return;
+            }
+            list.innerHTML = items.map(item => {
+                const deficit = Math.max(0, item.reorder_point - item.current_quantity);
+                const urgency = item.current_quantity <= 5 ? 'danger' : 'warning';
+                return `<div style="padding:12px;border-bottom:1px solid var(--border-glass);display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <div style="font-weight:500;font-size:0.9rem;">${item.product_name}</div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);">${item.category} • Need +${deficit} more</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <span class="badge badge-${urgency}">${item.current_quantity} left</span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function renderSalesChart(labels, data) {
+            if (salesChart) salesChart.destroy();
+            salesChart = new Chart(document.getElementById('salesChart'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Sales (₹)',
+                        data,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99,102,241,0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHitRadius: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#6b7280', font: { size: 10 } } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#6b7280', font: { size: 10 }, callback: v => '₹' + (v / 1000).toFixed(0) + 'k' } }
+                    }
+                }
+            });
+        }
+
+        function renderCategoryChart(labels, data) {
+            if (categoryChart) categoryChart.destroy();
+            const colors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6'];
+            categoryChart = new Chart(document.getElementById('categoryChart'), {
+                type: 'doughnut',
+                data: {
+                    labels,
+                    datasets: [{
+                        data,
+                        backgroundColor: colors.slice(0, labels.length),
+                        borderWidth: 0,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: { color: '#9ca3af', font: { size: 11 }, padding: 12, usePointStyle: true, pointStyleWidth: 8 }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load dashboard on page load
+        loadDashboard();
+    </script>
+</body>
+
+</html>

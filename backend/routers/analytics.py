@@ -1,63 +1,43 @@
+"""Analytics router — reports and insights endpoints."""
+
 from fastapi import APIRouter
-from services.db import InventoryService
-from typing import List, Dict, Any
-from datetime import datetime, timedelta
+from typing import Optional
+from ..services import analytics_service
 
-router = APIRouter()
+router = APIRouter(prefix="/api/v1/stores/{store_id}", tags=["Analytics"])
 
-@router.get("/dashboard")
-def get_dashboard_summary(store_id: str):
-    inventory = InventoryService.get_inventory(store_id)
-    
-    total_items = len(inventory)
-    low_stock_items = [i for i in inventory if i.get('quantity', 0) <= i.get('min_threshold', 10)]
-    out_of_stock_items = [i for i in inventory if i.get('quantity', 0) == 0]
-    
-    # Calculate total value
-    total_value = sum((i.get('quantity', 0) * i.get('unit_price', 0)) for i in inventory)
-    
-    return {
-        "store_id": store_id,
-        "metrics": {
-            "total_products": total_items,
-            "low_stock_count": len(low_stock_items),
-            "out_of_stock_count": len(out_of_stock_items),
-            "total_inventory_value": total_value
-        },
-        "low_stock_alerts": low_stock_items
-    }
 
-@router.get("/predictions")
-def get_sales_predictions(store_id: str):
-    """
-    Mock endpoint for predicting next week's sales/demand.
-    In a real system, this would call an ML model (like Prophet)
-    hosted on SageMaker or a dedicated prediction container.
-    """
-    inventory = InventoryService.get_inventory(store_id)
-    
-    predictions = []
-    
-    # Generate mock predictions for top 5 items
-    for item in inventory[:5]: 
-        # Simulated prediction: current stock will run out in X days, suggested order qty
-        daily_sales_rate = item.get('quantity', 10) * 0.1 # Mock rate: 10% of stock sold daily
-        if daily_sales_rate == 0:
-            daily_sales_rate = 1
-            
-        days_to_stock_out = int(item.get('quantity', 0) / daily_sales_rate)
-        
-        predictions.append({
-            "product_id": item.get('product_id'),
-            "name": item.get('name'),
-            "current_stock": item.get('quantity'),
-            "predicted_daily_demand": round(daily_sales_rate, 2),
-            "estimated_stockout_days": days_to_stock_out,
-            "suggested_order_qty": int(daily_sales_rate * 7) # Order for next 7 days
-        })
-        
-    return {
-        "store_id": store_id,
-        "forecast_period_days": 7,
-        "predictions": predictions
-    }
+@router.get("/reports/daily")
+async def daily_report(store_id: str, date: Optional[str] = None):
+    """Get daily sales report."""
+    return analytics_service.get_daily_report(store_id, date)
+
+
+@router.get("/reports/weekly")
+async def weekly_report(store_id: str):
+    """Get weekly sales report."""
+    return analytics_service.get_weekly_report(store_id)
+
+
+@router.get("/reports/monthly")
+async def monthly_report(store_id: str):
+    """Get monthly sales report."""
+    return analytics_service.get_monthly_report(store_id)
+
+
+@router.get("/analytics/sales-trends")
+async def sales_trends(store_id: str, days: int = 30):
+    """Get daily sales trend data for charts."""
+    return {"trends": analytics_service.get_sales_trends(store_id, days)}
+
+
+@router.get("/analytics/top-products")
+async def top_products(store_id: str, days: int = 30, limit: int = 10):
+    """Get top selling products."""
+    return {"top_products": analytics_service.get_top_products(store_id, days, limit)}
+
+
+@router.get("/analytics/summary")
+async def analytics_summary(store_id: str):
+    """Get full analytics summary for dashboard."""
+    return analytics_service.get_analytics_summary(store_id)

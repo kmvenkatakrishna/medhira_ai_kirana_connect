@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics — KiranaConnect AI</title>
+    <meta name="description" content="Sales analytics, trends, and reports for your Kirana store">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <nav class="nav">
+        <div class="nav-inner">
+            <a href="index.html" class="nav-logo"><span class="nav-logo-icon">🏪</span><span>Kirana<span
+                        class="text-gradient">Connect</span></span></a>
+            <ul class="nav-links">
+                <li><a href="index.html">🏠 Home</a></li>
+                <li><a href="dashboard.html">📊 Dashboard</a></li>
+                <li><a href="chat.html">💬 AI Chat</a></li>
+                <li><a href="analytics.html" class="active">📈 Analytics</a></li>
+                <li><a href="orders.html">📋 Orders</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="page-wrapper">
+        <div class="container">
+            <div class="section-header animate-fade-up"
+                style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <h2>📈 Sales Analytics</h2>
+                    <p>Insights, trends, and forecasts for your store</p>
+                </div>
+                <select class="form-input" id="storeSelect" style="width:auto;" onchange="loadAnalytics()">
+                    <option value="S001">Rajesh General Store</option>
+                    <option value="S002">Priya Kirana & Provisions</option>
+                    <option value="S003">Farooq Provision Store</option>
+                </select>
+            </div>
+
+            <!-- Report Cards Row -->
+            <div class="three-col" style="margin-bottom:24px;">
+                <div class="stat-card animate-fade-up delay-1" style="border-top:3px solid #6366f1;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                        <span
+                            style="font-size:0.8rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;">Daily
+                            Report</span>
+                        <span class="badge badge-info">Today</span>
+                    </div>
+                    <div class="stat-value" id="dailySales">—</div>
+                    <div class="stat-label">Total Sales</div>
+                    <div style="margin-top:12px;font-size:0.85rem;color:var(--text-secondary);" id="dailyTxns">—
+                        transactions</div>
+                </div>
+                <div class="stat-card animate-fade-up delay-2" style="border-top:3px solid #10b981;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                        <span
+                            style="font-size:0.8rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;">Weekly</span>
+                        <span class="badge badge-success">7 Days</span>
+                    </div>
+                    <div class="stat-value" id="weeklySales">—</div>
+                    <div class="stat-label">Total Sales</div>
+                    <div style="margin-top:12px;font-size:0.85rem;color:var(--text-secondary);" id="weeklyAvg">— avg/day
+                    </div>
+                </div>
+                <div class="stat-card animate-fade-up delay-3" style="border-top:3px solid #f59e0b;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                        <span
+                            style="font-size:0.8rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;">Monthly</span>
+                        <span class="badge badge-warning">30 Days</span>
+                    </div>
+                    <div class="stat-value" id="monthlySales">—</div>
+                    <div class="stat-label">Total Sales</div>
+                    <div style="margin-top:12px;font-size:0.85rem;color:var(--text-secondary);" id="monthlyTxns">—
+                        transactions</div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="two-col" style="margin-bottom:24px;">
+                <div class="glass-card animate-fade-up delay-2">
+                    <h3 style="margin-bottom:16px;font-size:1.05rem;">📈 30-Day Sales Trend</h3>
+                    <div class="chart-container"><canvas id="trendChart"></canvas></div>
+                </div>
+                <div class="glass-card animate-fade-up delay-3">
+                    <h3 style="margin-bottom:16px;font-size:1.05rem;">🏆 Top Products (Revenue)</h3>
+                    <div class="chart-container"><canvas id="topProductsChart"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Forecast & Category -->
+            <div class="two-col" style="margin-bottom:24px;">
+                <div class="glass-card animate-fade-up delay-3">
+                    <h3 style="margin-bottom:16px;font-size:1.05rem;">🔮 AI Demand Predictions</h3>
+                    <div id="predictionsList" style="max-height:350px;overflow-y:auto;"></div>
+                </div>
+                <div class="glass-card animate-fade-up delay-4">
+                    <h3 style="margin-bottom:16px;font-size:1.05rem;">📊 Category Sales Breakdown</h3>
+                    <div id="categoryBreakdown" style="max-height:350px;overflow-y:auto;"></div>
+                </div>
+            </div>
+
+            <!-- Top Products Table -->
+            <div class="glass-card animate-fade-up delay-4">
+                <h3 style="margin-bottom:16px;font-size:1.05rem;">🏆 Top Selling Products — Last 30 Days</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Units Sold</th>
+                            <th>Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topProductsTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <p>© 2026 KiranaConnect AI — Medhira AI</p>
+            </div>
+        </footer>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script>
+        let trendChart, topChart;
+
+        async function loadAnalytics() {
+            const sid = document.getElementById('storeSelect').value;
+
+            // Daily report
+            const daily = await KiranaAPI.getDailyReport(sid);
+            if (daily) {
+                document.getElementById('dailySales').textContent = formatCurrency(daily.total_sales);
+                document.getElementById('dailyTxns').textContent = `${daily.total_transactions} transactions`;
+            }
+
+            // Weekly report
+            const weekly = await KiranaAPI.getWeeklyReport(sid);
+            if (weekly) {
+                document.getElementById('weeklySales').textContent = formatCurrency(weekly.total_sales);
+                document.getElementById('weeklyAvg').textContent = `${formatCurrency(weekly.avg_daily_sales)} avg/day`;
+
+                // Category breakdown
+                if (weekly.category_breakdown) {
+                    const totalCatSales = weekly.category_breakdown.reduce((s, c) => s + c.sales, 0);
+                    document.getElementById('categoryBreakdown').innerHTML = weekly.category_breakdown.map(c => {
+                        const pct = ((c.sales / totalCatSales) * 100).toFixed(1);
+                        const colors = { 'Groceries': '#6366f1', 'Beverages': '#3b82f6', 'Snacks': '#f59e0b', 'Dairy': '#10b981', 'Personal Care': '#ec4899', 'Household': '#8b5cf6', 'Confectionery': '#ef4444', 'Bakery': '#14b8a6', 'Vegetables': '#22c55e', 'Ready to Cook': '#a855f7' };
+                        const color = colors[c.category] || '#6b7280';
+                        return `<div style="padding:10px 0;border-bottom:1px solid var(--border-glass);">
+                            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                                <span style="font-size:0.9rem;font-weight:500;">${c.category}</span>
+                                <span style="font-size:0.85rem;color:var(--text-secondary);">${formatCurrency(c.sales)} (${pct}%)</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${color};"></div></div>
+                        </div>`;
+                    }).join('');
+                }
+            }
+
+            // Monthly report
+            const monthly = await KiranaAPI.getMonthlyReport(sid);
+            if (monthly) {
+                document.getElementById('monthlySales').textContent = formatCurrency(monthly.total_sales);
+                document.getElementById('monthlyTxns').textContent = `${monthly.total_transactions} transactions`;
+            }
+
+            // Sales trends chart
+            const trends = await KiranaAPI.getSalesTrends(sid, 30);
+            if (trends && trends.trends) {
+                const labels = trends.trends.map(d => d.date.slice(5));
+                const data = trends.trends.map(d => d.sales);
+                if (trendChart) trendChart.destroy();
+                trendChart = new Chart(document.getElementById('trendChart'), {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: 'Daily Sales (₹)',
+                            data,
+                            borderColor: '#6366f1',
+                            backgroundColor: 'rgba(99,102,241,0.08)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 2,
+                            pointRadius: 1,
+                            pointHitRadius: 10
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#6b7280', font: { size: 10 }, maxTicksLimit: 10 } },
+                            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#6b7280', font: { size: 10 }, callback: v => '₹' + (v / 1000).toFixed(0) + 'k' } }
+                        }
+                    }
+                });
+            }
+
+            // Top products chart
+            const topProducts = await KiranaAPI.getTopProducts(sid);
+            if (topProducts && topProducts.top_products) {
+                const tp = topProducts.top_products.slice(0, 8);
+                if (topChart) topChart.destroy();
+                topChart = new Chart(document.getElementById('topProductsChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: tp.map(p => p.name.length > 18 ? p.name.slice(0, 18) + '…' : p.name),
+                        datasets: [{
+                            label: 'Revenue (₹)',
+                            data: tp.map(p => p.revenue),
+                            backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6'],
+                            borderRadius: 6,
+                            borderSkipped: false
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#6b7280', font: { size: 10 }, callback: v => '₹' + (v / 1000).toFixed(0) + 'k' } },
+                            y: { grid: { display: false }, ticks: { color: '#9ca3af', font: { size: 10 } } }
+                        }
+                    }
+                });
+
+                // Table
+                document.getElementById('topProductsTable').innerHTML = tp.map((p, i) => `
+                    <tr>
+                        <td style="color:var(--text-muted);">${i + 1}</td>
+                        <td style="font-weight:500;">${p.name}</td>
+                        <td><span class="badge badge-info">${p.category}</span></td>
+                        <td>${formatNumber(p.quantity)}</td>
+                        <td style="font-weight:600;color:var(--accent-secondary);">${formatCurrency(p.revenue)}</td>
+                    </tr>
+                `).join('');
+            }
+
+            // Predictions
+            const preds = await KiranaAPI.getPredictions(sid);
+            if (preds && preds.predictions) {
+                document.getElementById('predictionsList').innerHTML = preds.predictions.slice(0, 10).map(p => {
+                    const trend = p.factors?.trend || 'stable';
+                    const emoji = { 'increasing': '📈', 'decreasing': '📉', 'stable': '➡️' }[trend] || '➡️';
+                    const nextDay = p.predictions[0] || {};
+                    return `<div style="padding:12px 0;border-bottom:1px solid var(--border-glass);">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <div style="font-weight:500;font-size:0.9rem;">${emoji} ${p.product_name}</div>
+                                <div style="font-size:0.75rem;color:var(--text-muted);">Confidence: ${(p.model_confidence * 100).toFixed(0)}% • ${p.category}</div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-weight:700;color:var(--accent-primary-light);">~${nextDay.predicted_quantity || 0} units</div>
+                                <div style="font-size:0.7rem;color:var(--text-muted);">tomorrow</div>
+                            </div>
+                        </div>
+                        ${p.factors?.festival_impact ? `<div style="font-size:0.7rem;color:#f59e0b;margin-top:4px;">🎉 ${p.factors.festival_impact}</div>` : ''}
+                        ${p.factors?.weather_impact ? `<div style="font-size:0.7rem;color:#3b82f6;margin-top:2px;">🌤️ ${p.factors.weather_impact}</div>` : ''}
+                    </div>`;
+                }).join('');
+            }
+        }
+
+        loadAnalytics();
+    </script>
+</body>
+
+</html>

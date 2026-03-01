@@ -4,205 +4,185 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KiranaConnect | Chat Simulator</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <style>
-        .chat-container {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            background: var(--bg-card);
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--border-color);
-        }
-
-        .chat-header {
-            padding: 1rem 1.5rem;
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .chat-header .avatar {
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 1.5rem;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            background-image: url('data:image/svg+xml,%3Csvg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="%23ffffff" fill-opacity="0.03" fill-rule="evenodd"%3E%3Ccircle cx="3" cy="3" r="3"/%3E%3Ccircle cx="13" cy="13" r="3"/%3E%3C/g%3E%3C/svg%3E');
-        }
-
-        .message {
-            max-width: 75%;
-            padding: 0.8rem 1rem;
-            border-radius: 12px;
-            line-height: 1.4;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        .message.bot {
-            align-self: flex-start;
-            background: var(--bg-secondary);
-            border-bottom-left-radius: 2px;
-        }
-
-        .message.user {
-            align-self: flex-end;
-            background: var(--primary-color);
-            color: white;
-            border-bottom-right-radius: 2px;
-        }
-
-        .chat-input-area {
-            padding: 1rem;
-            background: var(--bg-card);
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .chat-input {
-            flex: 1;
-            padding: 0.8rem 1.2rem;
-            border-radius: 24px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            font-family: inherit;
-        }
-
-        .chat-input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-
-        .send-btn {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: transform 0.2s, background 0.2s;
-        }
-
-        .send-btn:hover {
-            transform: scale(1.05);
-            background: var(--primary-hover);
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    </style>
+    <title>AI Chat — KiranaConnect</title>
+    <meta name="description" content="Chat with KiranaConnect AI assistant for inventory management">
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 
-<body class="dark-theme">
-    <nav class="sidebar">
-        <div class="logo">
-            <span class="logo-icon">🏪</span>
-            <h2>KiranaConnect</h2>
+<body>
+    <nav class="nav">
+        <div class="nav-inner">
+            <a href="index.html" class="nav-logo"><span class="nav-logo-icon">🏪</span><span>Kirana<span
+                        class="text-gradient">Connect</span></span></a>
+            <ul class="nav-links">
+                <li><a href="index.html">🏠 Home</a></li>
+                <li><a href="dashboard.html">📊 Dashboard</a></li>
+                <li><a href="chat.html" class="active">💬 AI Chat</a></li>
+                <li><a href="analytics.html">📈 Analytics</a></li>
+                <li><a href="orders.html">📋 Orders</a></li>
+            </ul>
         </div>
-        <ul class="nav-links">
-            <li><a href="index.html">📊 Dashboard</a></li>
-            <li><a href="#">📦 Inventory</a></li>
-            <li class="active"><a href="chat.html">💬 Mock WhatsApp</a></li>
-            <li><a href="#">📈 Analytics</a></li>
-            <li><a href="#">⚙️ Settings</a></li>
-        </ul>
     </nav>
-    <main class="content">
-        <div class="chat-container">
-            <div class="chat-header">
-                <div class="avatar">🤖</div>
-                <div>
-                    <h2 style="font-size: 1.1rem; margin: 0;">KiranaConnect AI Agent</h2>
-                    <span style="font-size: 0.8rem; opacity: 0.8;">Online</span>
+
+    <main class="page-wrapper">
+        <div class="container" style="padding-top:20px;">
+            <div class="section-header text-center animate-fade-up" style="margin-bottom:16px;">
+                <h2>💬 KiranaConnect <span class="text-gradient">AI Assistant</span></h2>
+                <p>Chat naturally in English or Hindi — manage your inventory, get predictions, place orders</p>
+            </div>
+
+            <!-- Chat Container -->
+            <div class="chat-container animate-fade-up delay-1" id="chatContainer">
+                <!-- Chat Header -->
+                <div class="chat-header">
+                    <div class="avatar">🤖</div>
+                    <div class="chat-info">
+                        <h3>KiranaConnect AI</h3>
+                        <p>🟢 Online • Powered by ML</p>
+                    </div>
+                    <div style="margin-left:auto;">
+                        <select class="form-input" id="chatStoreSelect"
+                            style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);color:white;font-size:0.75rem;padding:4px 8px;">
+                            <option value="S001">Rajesh Store</option>
+                            <option value="S002">Priya Store</option>
+                            <option value="S003">Farooq Store</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Welcome message will be added by JS -->
+                </div>
+
+                <!-- Typing indicator -->
+                <div class="typing-indicator" id="typingIndicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="chat-input-area">
+                    <input type="text" class="chat-input" id="chatInput"
+                        placeholder="Type a message... (try 'check stock' or 'low stock')"
+                        onkeypress="if(event.key==='Enter')sendMessage()">
+                    <button class="chat-send-btn" onclick="sendMessage()" id="sendBtn">➤</button>
                 </div>
             </div>
 
-            <div class="chat-messages" id="chat-messages">
-                <div class="message bot">
-                    Hello! I'm your AI Inventory Assistant. How can I help you today?
-                    <br><br>
-                    Try saying:
-                    <br>- "Bought 50 Parle G"
-                    <br>- "Check stock"
+            <!-- Quick command reference -->
+            <div class="text-center animate-fade-up delay-3" style="margin-top:16px;">
+                <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;">
+                    <span
+                        style="font-size:0.75rem;color:var(--text-muted);padding:4px 10px;background:var(--bg-glass);border-radius:20px;">📦
+                        "check inventory"</span>
+                    <span
+                        style="font-size:0.75rem;color:var(--text-muted);padding:4px 10px;background:var(--bg-glass);border-radius:20px;">⚠️
+                        "low stock"</span>
+                    <span
+                        style="font-size:0.75rem;color:var(--text-muted);padding:4px 10px;background:var(--bg-glass);border-radius:20px;">📊
+                        "today's report"</span>
+                    <span
+                        style="font-size:0.75rem;color:var(--text-muted);padding:4px 10px;background:var(--bg-glass);border-radius:20px;">🔮
+                        "predict milk demand"</span>
+                    <span
+                        style="font-size:0.75rem;color:var(--text-muted);padding:4px 10px;background:var(--bg-glass);border-radius:20px;">📋
+                        "place order"</span>
+                    <span
+                        style="font-size:0.75rem;color:var(--text-muted);padding:4px 10px;background:var(--bg-glass);border-radius:20px;">🛒
+                        "bought 50 rice bags"</span>
                 </div>
-            </div>
-
-            <div class="chat-input-area">
-                <input type="text" id="chat-input" class="chat-input" placeholder="Type a message..."
-                    aria-label="Message">
-                <button class="send-btn" id="send-btn" aria-label="Send">
-                    ➤
-                </button>
             </div>
         </div>
     </main>
-    <script src="app.js"></script>
-    <script>
-        // Chat specific UI logic
-        const chatMessages = document.getElementById('chat-messages');
-        const chatInput = document.getElementById('chat-input');
-        const sendBtn = document.getElementById('send-btn');
 
-        function addMessage(text, sender) {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${sender}`;
-            msgDiv.textContent = text;
-            chatMessages.appendChild(msgDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+    <script src="js/api.js"></script>
+    <script>
+        const messagesDiv = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const typingIndicator = document.getElementById('typingIndicator');
+
+        // Add a message to chat
+        function addMessage(text, sender = 'bot', suggestions = []) {
+            const msg = document.createElement('div');
+            msg.className = `chat-message ${sender}`;
+
+            // Convert markdown-like bold to HTML
+            let html = text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+
+            msg.innerHTML = `
+                ${html}
+                <div class="time">${currentTime()}</div>
+            `;
+            messagesDiv.appendChild(msg);
+
+            // Add suggestion buttons
+            if (suggestions.length > 0 && sender === 'bot') {
+                const sugDiv = document.createElement('div');
+                sugDiv.className = 'chat-suggestions';
+                sugDiv.style.marginBottom = '8px';
+                suggestions.forEach(s => {
+                    const btn = document.createElement('button');
+                    btn.className = 'chat-suggestion-btn';
+                    btn.textContent = s;
+                    btn.onclick = () => {
+                        chatInput.value = s;
+                        sendMessage();
+                    };
+                    sugDiv.appendChild(btn);
+                });
+                messagesDiv.appendChild(sugDiv);
+            }
+
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
 
-        async function handleSend() {
+        // Send message
+        async function sendMessage() {
             const text = chatInput.value.trim();
             if (!text) return;
 
-            // Add user message to UI
+            // Add user message
             addMessage(text, 'user');
             chatInput.value = '';
 
-            // Send to backend via App setup
-            const responseText = await window.sendMessageToAPI(text);
+            // Show typing
+            typingIndicator.classList.add('active');
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
-            // Add bot response to UI
-            addMessage(responseText, 'bot');
+            // Get AI response
+            const storeId = document.getElementById('chatStoreSelect').value;
+            const result = await KiranaAPI.sendMessage(text, storeId);
+
+            // Hide typing after delay
+            await new Promise(r => setTimeout(r, 800 + Math.random() * 800));
+            typingIndicator.classList.remove('active');
+
+            if (result) {
+                addMessage(result.response, 'bot', result.suggestions || []);
+            } else {
+                addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+            }
         }
 
-        sendBtn.addEventListener('click', handleSend);
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleSend();
-        });
+        // Initialize with welcome message
+        setTimeout(() => {
+            addMessage(
+                '🙏 **Namaste! Welcome to KiranaConnect AI.**\n\n' +
+                'I\'m your smart inventory assistant. I can help you with:\n\n' +
+                '📦 Check stock levels\n' +
+                '📊 View sales reports\n' +
+                '🔮 Demand predictions\n' +
+                '📋 Place orders\n' +
+                '⚠️ Low stock alerts\n\n' +
+                'How can I help you today?',
+                'bot',
+                ['Check inventory', 'Low stock alerts', 'Today\'s report', 'Predict demand']
+            );
+        }, 500);
     </script>
 </body>
 

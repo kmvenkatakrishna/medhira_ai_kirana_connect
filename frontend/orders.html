@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders — KiranaConnect AI</title>
+    <meta name="description" content="Order management and auto-ordering for your Kirana store">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <nav class="nav">
+        <div class="nav-inner">
+            <a href="index.html" class="nav-logo"><span class="nav-logo-icon">🏪</span><span>Kirana<span
+                        class="text-gradient">Connect</span></span></a>
+            <ul class="nav-links">
+                <li><a href="index.html">🏠 Home</a></li>
+                <li><a href="dashboard.html">📊 Dashboard</a></li>
+                <li><a href="chat.html">💬 AI Chat</a></li>
+                <li><a href="analytics.html">📈 Analytics</a></li>
+                <li><a href="orders.html" class="active">📋 Orders</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="page-wrapper">
+        <div class="container">
+            <div class="section-header animate-fade-up"
+                style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <h2>📋 Order Management</h2>
+                    <p>Track orders, auto-generate from predictions, manage distributors</p>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <select class="form-input" id="storeSelect" style="width:auto;" onchange="loadOrders()">
+                        <option value="S001">Rajesh General Store</option>
+                        <option value="S002">Priya Kirana & Provisions</option>
+                        <option value="S003">Farooq Provision Store</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="generateOrder()">⚡ Auto-Generate Order</button>
+                </div>
+            </div>
+
+            <!-- Order Stats -->
+            <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);" id="orderStats">
+                <div class="stat-card animate-fade-up delay-1">
+                    <div class="stat-icon" style="background:rgba(156,163,175,0.1);">📋</div>
+                    <div class="stat-value" id="pendingCount">—</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+                <div class="stat-card animate-fade-up delay-2">
+                    <div class="stat-icon" style="background:rgba(59,130,246,0.1);">✅</div>
+                    <div class="stat-value" id="confirmedCount">—</div>
+                    <div class="stat-label">Confirmed</div>
+                </div>
+                <div class="stat-card animate-fade-up delay-3">
+                    <div class="stat-icon" style="background:rgba(245,158,11,0.1);">🚚</div>
+                    <div class="stat-value" id="shippedCount">—</div>
+                    <div class="stat-label">In Transit</div>
+                </div>
+                <div class="stat-card animate-fade-up delay-4">
+                    <div class="stat-icon" style="background:rgba(16,185,129,0.1);">📦</div>
+                    <div class="stat-value" id="deliveredCount">—</div>
+                    <div class="stat-label">Delivered</div>
+                </div>
+            </div>
+
+            <!-- Filter Tabs -->
+            <div class="glass-card animate-fade-up delay-2" style="margin-bottom:24px;">
+                <div style="display:flex;gap:8px;margin-bottom:16px;">
+                    <button class="btn btn-sm btn-primary" onclick="filterOrders('')" id="filterAll">All Orders</button>
+                    <button class="btn btn-sm btn-secondary" onclick="filterOrders('pending')"
+                        id="filterPending">Pending</button>
+                    <button class="btn btn-sm btn-secondary" onclick="filterOrders('confirmed')"
+                        id="filterConfirmed">Confirmed</button>
+                    <button class="btn btn-sm btn-secondary" onclick="filterOrders('shipped')"
+                        id="filterShipped">Shipped</button>
+                    <button class="btn btn-sm btn-secondary" onclick="filterOrders('delivered')"
+                        id="filterDelivered">Delivered</button>
+                </div>
+                <div id="ordersList"></div>
+            </div>
+
+            <!-- Distributors Section -->
+            <div class="glass-card animate-fade-up delay-3">
+                <h3 style="margin-bottom:16px;font-size:1.05rem;">🏭 Your Distributors</h3>
+                <div id="distributorsList" class="grid"
+                    style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;"></div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <p>© 2026 KiranaConnect AI — Medhira AI</p>
+            </div>
+        </footer>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script>
+        let allOrders = [];
+
+        async function loadOrders() {
+            const sid = document.getElementById('storeSelect').value;
+
+            // Load orders
+            const data = await KiranaAPI.getOrders(sid);
+            if (data && data.orders) {
+                allOrders = data.orders;
+                renderOrders(allOrders);
+
+                // Stats
+                const counts = { pending: 0, confirmed: 0, shipped: 0, delivered: 0 };
+                allOrders.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; });
+                document.getElementById('pendingCount').textContent = counts.pending;
+                document.getElementById('confirmedCount').textContent = counts.confirmed;
+                document.getElementById('shippedCount').textContent = counts.shipped;
+                document.getElementById('deliveredCount').textContent = counts.delivered;
+            }
+
+            // Load distributors
+            const dist = await KiranaAPI.getDistributors();
+            if (dist && dist.distributors) {
+                document.getElementById('distributorsList').innerHTML = dist.distributors.map(d => `
+                    <div style="padding:16px;background:var(--bg-glass);border:1px solid var(--border-glass);border-radius:var(--radius-md);transition:var(--transition-fast);"
+                         onmouseover="this.style.borderColor='var(--border-glass-hover)'" onmouseout="this.style.borderColor='var(--border-glass)'">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <span style="font-weight:600;">${d.name}</span>
+                            <span style="font-size:0.8rem;color:#f59e0b;">⭐ ${d.rating}</span>
+                        </div>
+                        <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:6px;">📍 ${d.city} • 📞 ${d.phone}</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                            ${d.categories.map(c => `<span class="badge badge-info" style="font-size:0.7rem;">${c}</span>`).join('')}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function filterOrders(status) {
+            // Update button styles
+            document.querySelectorAll('[id^="filter"]').forEach(b => {
+                b.className = 'btn btn-sm btn-secondary';
+            });
+            const btnId = status ? `filter${status.charAt(0).toUpperCase() + status.slice(1)}` : 'filterAll';
+            document.getElementById(btnId).className = 'btn btn-sm btn-primary';
+
+            const filtered = status ? allOrders.filter(o => o.status === status) : allOrders;
+            renderOrders(filtered);
+        }
+
+        function renderOrders(orders) {
+            if (orders.length === 0) {
+                document.getElementById('ordersList').innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">No orders found</div>';
+                return;
+            }
+
+            document.getElementById('ordersList').innerHTML = orders.map(order => {
+                const statusConfig = {
+                    pending: { color: '#9ca3af', badge: 'badge-pending', icon: '⏳', label: 'Pending' },
+                    confirmed: { color: '#3b82f6', badge: 'badge-info', icon: '✅', label: 'Confirmed' },
+                    shipped: { color: '#f59e0b', badge: 'badge-warning', icon: '🚚', label: 'In Transit' },
+                    delivered: { color: '#10b981', badge: 'badge-success', icon: '📦', label: 'Delivered' }
+                };
+                const sc = statusConfig[order.status] || statusConfig.pending;
+
+                // Order progress
+                const steps = ['pending', 'confirmed', 'shipped', 'delivered'];
+                const currentStep = steps.indexOf(order.status);
+
+                return `<div style="padding:16px;border:1px solid var(--border-glass);border-radius:var(--radius-md);margin-bottom:12px;border-left:3px solid ${sc.color};transition:var(--transition-fast);"
+                             onmouseover="this.style.background='var(--bg-glass)'" onmouseout="this.style.background='transparent'">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                        <div>
+                            <span style="font-weight:600;font-size:0.95rem;">${order.order_id}</span>
+                            <span class="badge ${sc.badge}" style="margin-left:8px;">${sc.icon} ${sc.label}</span>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-weight:700;color:var(--accent-primary-light);">${formatCurrency(order.total_amount)}</div>
+                            <div style="font-size:0.7rem;color:var(--text-muted);">${order.distributor_name}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Steps -->
+                    <div style="display:flex;align-items:center;gap:4px;margin-bottom:12px;">
+                        ${steps.map((s, i) => `
+                            <div style="flex:1;height:3px;border-radius:2px;background:${i <= currentStep ? sc.color : 'var(--bg-glass)'}"></div>
+                        `).join('')}
+                    </div>
+
+                    <!-- Items -->
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                        ${order.items.slice(0, 4).map(item => `
+                            <span style="font-size:0.75rem;padding:3px 8px;background:var(--bg-glass);border-radius:var(--radius-full);color:var(--text-secondary);">
+                                ${item.product_name} ×${item.quantity}
+                            </span>
+                        `).join('')}
+                        ${order.items.length > 4 ? `<span style="font-size:0.75rem;padding:3px 8px;color:var(--text-muted);">+${order.items.length - 4} more</span>` : ''}
+                    </div>
+
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+                        <span style="font-size:0.75rem;color:var(--text-muted);">Placed: ${new Date(order.placed_at).toLocaleDateString()}</span>
+                        ${order.status === 'pending' ? `<button class="btn btn-sm btn-success" onclick="placeOrder('${order.order_id}')">Confirm Order →</button>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        async function generateOrder() {
+            const sid = document.getElementById('storeSelect').value;
+            const result = await KiranaAPI.generateOrder(sid);
+            if (result && result.order) {
+                alert(`✅ Order ${result.order.order_id} generated!\nItems: ${result.order.items.length}\nTotal: ₹${result.order.total_amount.toLocaleString()}`);
+                loadOrders();
+            } else if (result && result.message) {
+                alert(result.message);
+            }
+        }
+
+        async function placeOrder(orderId) {
+            const sid = document.getElementById('storeSelect').value;
+            const result = await KiranaAPI.placeOrder(sid, orderId);
+            if (result && result.order) {
+                loadOrders();
+            }
+        }
+
+        loadOrders();
+    </script>
+</body>
+
+</html>
