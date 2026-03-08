@@ -17,6 +17,7 @@ from datetime import datetime
 from typing import Dict, Optional, List
 from .data_store import data_store
 from . import analytics_service
+from .bedrock_service import bedrock_service
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -350,7 +351,8 @@ def classify_intent(text: str, store_id: str = None) -> dict:
 # ═══════════════════════════════════════════════════════════════════
 
 def generate_response(message: str, store_id: str = None) -> dict:
-    """Process a chat message and generate an AI response."""
+    """Process a chat message and generate an AI response.
+    Uses Amazon Bedrock (Claude) when available, falls back to local NLP."""
     if not store_id:
         store_id = DEFAULT_STORE
 
@@ -362,10 +364,38 @@ def generate_response(message: str, store_id: str = None) -> dict:
     # Save context for follow-ups
     _set_context(store_id, intent, entities)
 
+    # ── Try Amazon Bedrock for enhanced AI responses ──
+    bedrock_intents = ["get_insights", "expiry_check", "profit_analysis",
+                       "cross_sell", "greeting", "help", "unknown"]
+    if bedrock_service.is_available() and intent in bedrock_intents:
+        inventory_ctx = _build_inventory_context(store_id)
+        insights_ctx = _build_insights_context(store_id)
+        bedrock_result = bedrock_service.generate_response(
+            user_message=message,
+            inventory_context=inventory_ctx,
+            ai_insights_context=insights_ctx
+        )
+        if bedrock_result:
+            return {
+                "response": bedrock_result["response"],
+                "intent": intent,
+                "confidence": bedrock_result["confidence"],
+                "suggestions": _get_suggestions_for_intent(intent),
+                "ai_metadata": {
+                    "model": bedrock_result["model"],
+                    "powered_by": "Amazon Bedrock",
+                    "tokens_used": bedrock_result.get("tokens_used", 0),
+                    "intent_scores": result.get("all_scores", {})
+                },
+                "timestamp": datetime.now().isoformat()
+            }
+
+    # ── Fallback: Local NLP engine ──
     response = ""
     suggestions = []
     ai_metadata = {
         "model": "KiranaConnect NLP v2.0",
+        "powered_by": "Local AI Engine",
         "confidence": result["confidence"],
         "intent_scores": result.get("all_scores", {}),
         "processing_time_ms": random.randint(45, 180)
@@ -661,3 +691,66 @@ def _get_avg_daily_sales(store_id: str, product_id: str, days: int = 14) -> floa
             if item["product_id"] == product_id:
                 total += item["quantity"]
     return total / max(days, 1)
+
+
+def _build_inventory_context(store_id: str) -> str:
+    """Build inventory summary for Bedrock context."""
+    try:
+        inv = data_store.get_inventory(store_id)
+        items = inv.get("items", []) if isinstance(inv, dict) else []
+        if not items:
+            return "Store has no inventory data loaded."
+
+        low_stock = [i for i in items if i.get("current_quantity", 0) <= i.get("reorder_point", 5)]
+        total_value = sum(i.get("current_quantity", 0) * i.get("unit_price", 0) for i in items)
+
+        lines = [
+            f"Total Products: {len(items)}",
+            f"Inventory Value: ₹{total_value:,.0f}",
+            f"Low Stock Items: {len(low_stock)}",
+        ]
+        if low_stock[:5]:
+            lines.append("Low stock: " + ", ".join(
+                f"{i['product_name']} ({i['current_quantity']} left)" for i in low_stock[:5]
+            ))
+        return "\n".join(lines)
+    except Exception:
+        return "Inventory data unavailable."
+
+
+def _build_insights_context(store_id: str) -> str:
+    """Build AI insights summary for Bedrock context."""
+    try:
+        from .ai_insights_engine import AIInsightsEngine
+        engine = AIInsightsEngine(store_id)
+        insights = engine.get_all_insights()
+        lines = []
+        if insights.get("optimization_score"):
+            lines.append(f"Optimization Score: {insights['optimization_score']['score']}/100")
+        if insights.get("anomalies"):
+            lines.append(f"Anomalies: {len(insights['anomalies'])} detected")
+        if insights.get("expiry_risks"):
+            lines.append(f"Expiry Risks: {len(insights['expiry_risks'])} perishable items")
+        if insights.get("smart_reorder"):
+            lines.append(f"Reorder Needed: {len(insights['smart_reorder'])} items")
+        if insights.get("cross_sell"):
+            top = insights["cross_sell"][0]
+            lines.append(f"Top Cross-sell: {top.get('product_a', '?')} + {top.get('product_b', '?')}")
+        return "\n".join(lines) if lines else "No insights generated yet."
+    except Exception:
+        return "Insights unavailable."
+
+
+def _get_suggestions_for_intent(intent: str) -> list:
+    """Get quick-action suggestions based on the current intent."""
+    suggestion_map = {
+        "get_insights": ["📋 Smart order", "🎯 Expiry check", "📊 Profit analysis", "🔗 Cross-sell"],
+        "expiry_check": ["📋 Smart order", "💰 Profit analysis", "📊 Check inventory"],
+        "profit_analysis": ["📋 Smart order", "🎯 Expiry check", "📊 AI Insights"],
+        "cross_sell": ["📋 Smart order", "🎯 Expiry check", "📊 AI Insights"],
+        "greeting": ["📦 Check inventory", "⚠️ Low stock", "📊 Today's report", "🤖 AI Insights"],
+        "help": ["📦 Check inventory", "⚠️ Low stock", "📊 Today's report", "🤖 AI Insights"],
+        "unknown": ["📦 Check inventory", "⚠️ Low stock", "📊 Today's report", "🤖 AI Insights"],
+    }
+    return suggestion_map.get(intent, ["📦 Check inventory", "📊 AI Insights"])
+
