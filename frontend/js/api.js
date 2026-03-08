@@ -3,9 +3,7 @@
  * Handles all communication with the FastAPI backend.
  */
 
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:8000'
-    : '';  // Same origin in production
+const API_BASE = '';  // Same origin — frontend served from FastAPI
 
 const DEFAULT_STORE = 'S001';
 
