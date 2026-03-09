@@ -24,3 +24,5 @@ deploy/packages/
 
 # Logs
 *.log
+
+demo_videos/
